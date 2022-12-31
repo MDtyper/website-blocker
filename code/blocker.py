@@ -5,7 +5,7 @@ import re
 class Blocker:
     
     HOSTS_PATH = r"C:\Windows\System32\drivers\etc\hosts"
-    WEBSITES_PATH = r"C:\Users\matth\OneDrive\Bureaublad\python\WebsiteBlocker\websites.txt"
+    WEBSITES_PATH = r"C:\Users\...\websites.txt"
 
     def __init__(self) -> None:
         self.blocked_websites: list = self.blocked_website_retriever()
@@ -116,8 +116,6 @@ class Blocker:
             pass
         
         self.blocked_websites = []
-
-
 
 
 def url_cleaner_validater(url:str) -> str:
