@@ -17,4 +17,4 @@ Using the Tkinter library a simple GUI is shown and allows for the simple adding
 
 To "block" a website, insert the website inside the entry and press the Block button or simply press Enter. The website will be added to the hosts file and will be shown within the GUI.
 
-to "remove" a website, select the row within the GUI you want to remove and press the Unlock button or the "delete" key. 
+To "remove" a website, select the row within the GUI you want to remove and press the Unlock button or the "delete" key. 
