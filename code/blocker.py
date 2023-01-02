@@ -5,19 +5,19 @@ import re
 class Blocker:
     
     HOSTS_PATH = r"C:\Windows\System32\drivers\etc\hosts"
-    WEBSITES_PATH = r"C:\Users\...\websites.txt"
+    WEBSITES_PATH = r"C:\Users\<User>\python\WebsiteBlocker\txt_files\websites.txt"
 
     def __init__(self) -> None:
         self.blocked_websites: list = self.blocked_website_retriever()
         self.redirection = "0.0.0.0"
     
     def blocked_website_retriever(self):
-        """Opens the website.txt file and adds the blocked websites to list."""
+        """Opens the txt file and adds the blocked websites to list."""
 
         blocked_website_list = []
         
         # To avoid an error, if the file does not exist yet, it will first be created
-        if os.path.exists(self.WEBSITES_PATH) == False:
+        if not os.path.exists(self.WEBSITES_PATH):
             with open(self.WEBSITES_PATH,"w") as file:
                 pass
 
@@ -34,7 +34,7 @@ class Blocker:
                     if line == "\n":
                         continue
                 except:
-                    print("There seems to be a problem with the unpacking in the 'Blocker.blocked_website_retriever' function")
+                    raise "There seems to be a problem with the unpacking in the 'Blocker.blocked_website_retriever' function"
 
             return blocked_website_list
 
@@ -53,11 +53,12 @@ class Blocker:
             self.blocked_websites.append(["Empty","Empty","Empty"])
             return ["Empty","Empty","Empty"]
         
-        with open(self.WEBSITES_PATH, "a") as file:
-            file.write(f"www.{website} {self.redirection} {date}\n")
 
 
         # Else add the website to the Hosts file, once with and once without "www"
+        with open(self.WEBSITES_PATH, "a") as file:
+            file.write(f"www.{website} {self.redirection} {date}\n")
+
         with open(self.HOSTS_PATH,"a") as hosts:
 
             hosts.write(f"{self.redirection} {website}\n")
@@ -67,20 +68,45 @@ class Blocker:
         self.blocked_websites.append([f"www.{website}",self.redirection])
         
         return f"www.{website}",self.redirection,date
+    
+    def block_list_website(self,list_websites:list) -> list:
+        date = datetime.datetime.now()
+        return_list = []
+        
+        for website in list_websites:
+            cleaned_website = url_cleaner_validater(website)
+            print(cleaned_website)
+            if cleaned_website  == "" or cleaned_website == '\n':
+                continue                     
+            
+            with open(self.WEBSITES_PATH, "a") as file:
+                file.write(f"www.{cleaned_website} {self.redirection} {date}\n")
 
-   
+            with open(self.HOSTS_PATH,"a") as hosts:
+
+                hosts.write(f"{self.redirection} {cleaned_website}\n")
+                hosts.write(f"{self.redirection} www.{cleaned_website}\n")
+
+            self.blocked_websites.append([f"www.{cleaned_website}",self.redirection])
+        
+            return_list.append((f"www.{cleaned_website}",self.redirection,date))
+        return return_list
+
+
     def unblock_website(self,website:str,index=int) -> None:
-        """Removes website from both the Hosts file and the websites.txt file"""
+        """Removes website from both the Hosts file and the txt file"""
         self.blocked_websites.pop(index)
         with open(self.WEBSITES_PATH,'r') as file:
             file_lines = file.readlines()
 
         with open(self.WEBSITES_PATH,'w') as file_writerover:
             for line in file_lines:
-                if website in line:
-                    continue
                 
-                file_writerover.write(line)
+                if website not in line:
+
+                    file_writerover.write(line)
+
+            
 
 
         with open(self.HOSTS_PATH,"r") as file_content:
@@ -91,15 +117,12 @@ class Blocker:
                 
                 if line[0] == "#" or line == "\n":
                     hosts.write(line)
-                    
-                else:
-                    if website in line.split()[1]:
-                        continue
-                    
+    
+                elif website not in line.split()[1]:                    
                     hosts.write(line)
-  
+
     def resetter(self):
-        """resetting both the hosts file and the websites.txt file"""
+        """resetting both the hosts file and the txt file"""
 
         print("resetting object")
         #only keeps the \n and commented out lines
@@ -115,12 +138,15 @@ class Blocker:
         with open(self.WEBSITES_PATH,'w') as file_writerover:
             pass
         
+        #empties the list
         self.blocked_websites = []
+
+
 
 
 def url_cleaner_validater(url:str) -> str:
     """Returns the url without the www or https://"""
-    url = url.lower()
+    url = url.lower().strip()
     url = "".join(url.split())
 
     if url.startswith("www."):
@@ -131,6 +157,34 @@ def url_cleaner_validater(url:str) -> str:
         url = re.sub("https://","",url)
 
     return url
+
+
+class BlockedList():
+    PATH_DEFAULT_LIST = r"C:\Users\<User>\python\WebsiteBlocker\txt_files\default.txt"
+    
+    def __init__(self):
+        
+        if not os.path.exists(self.PATH_DEFAULT_LIST):
+            with open(self.PATH_DEFAULT_LIST,'w') as file:
+                print("created new file")
+
+        self.default_list = self.get_default_list()
+
+    
+    def get_default_list(self) -> list:
+        with open(self.PATH_DEFAULT_LIST,'r') as file:
+            return file.readlines()
+   
+    def set_new_default(self,default_list:list) -> None:
+        with open(self.PATH_DEFAULT_LIST,'w') as file:
+            for i in default_list:
+                if i != "":
+                    file.write(f"www.{url_cleaner_validater(i)}\n")
+
+
+
+
+
 
 
 if __name__ == "__main__":
