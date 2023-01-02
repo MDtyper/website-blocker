@@ -27,7 +27,7 @@ class RootFrame:
         
         main = MainFrame(self.root, self.different_frames[0],website_blocker)
         ExtraFrame(self.root, self.different_frames[1],main,website_blocker)
-        this is some change
+        
 
 
 
