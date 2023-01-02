@@ -30,7 +30,6 @@ class RootFrame:
         ExtraFrame(self.root, self.different_frames[1],main,website_blocker)
 
 
-
 class MainFrame():
     
     def __init__(self,root,frame,obj_website_blocker):        
