@@ -15,7 +15,7 @@ To "block" a website, insert the website inside the entry and press the Block bu
 If want to block a certain amount of websites at the same time, you can now do so. Simply copy in the different urls you would like to block and paste them inside the second window. You can save certain lists of urls for different moments. E.g. you could save social media links if you regularly want to block the same list of social media urls. 
 You can both add the urls to the blocked websites, or only block the typed urls in such removing the existing blocked urls. You can also change to redirection adress within the GUI. 
 lastly if you want to remove everything from the blocked list, simply press "reset". 
-<img width="493" alt="Gui" src= https://user-images.githubusercontent.com/58997886/210615032-306a905b-9ff6-4c9c-af9f-fdba488dae2d.png)>
+![image](https://user-images.githubusercontent.com/58997886/210618639-babd3f96-2c82-4aeb-87ab-9c44b7f3dfde.png)
 
 
 Since I am a beginner, if you have any adviced or remarks on the code please let me know!
