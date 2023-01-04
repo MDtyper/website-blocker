@@ -17,6 +17,6 @@ If want to block a certain amount of websites at the same time, you can now do s
 You can both add the urls to the blocked websites, or only block the typed urls in such removing the existing blocked urls. You can also change to redirection adress within the GUI. 
 lastly if you want to remove everything from the blocked list, simply press "reset". 
 
-<img width="493" alt="Gui1" src="https://user-images.githubusercontent.com/58997886/210618639-babd3f96-2c82-4aeb-87ab-9c44b7f3dfde.png">
+<img width="493" alt="Gui1" src="https://user-images.githubusercontent.com/58997886/210619254-852133e8-f4ed-4bc4-a0aa-922dafade152.png">
 
 Since I am a beginner, if you have any adviced or remarks on the code please let me know!
