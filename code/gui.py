@@ -3,10 +3,9 @@ from tkinter.messagebox import askokcancel
 from tkinter import ttk
 import webbrowser
 import os
-import datetime
 import pyperclip
 
-from blocker import BlockedList,url_cleaner_validater
+from blocker import BlockedList
 
 
 class RootFrame:
@@ -27,7 +26,8 @@ class RootFrame:
             self.different_frames.append(self.frame)
         
         main = MainFrame(self.root, self.different_frames[0],website_blocker)
-        ExtraFrame(self.root, self.different_frames[1],main,website_blocker)
+        extra1 = ExtraFrame(self.root, self.different_frames[1],main,website_blocker)
+
 
 
 class MainFrame():
@@ -91,7 +91,7 @@ class MainFrame():
 
         self.button_website_test = ttk.Button(self.FRAME_down_right,text="Test Website",command=self.open_website)
         self.button_unblock = ttk.Button(self.FRAME_down_right,text="Unblock",command=self.command_unblock)
-        self.button_quit = ttk.Button(self.FRAME_down_right,text="quit", command = self.quit_apl)
+        self.button_quit = ttk.Button(self.FRAME_down_right,text="quit", command = quit)
 
         self.button_website_test.grid(column=0,row=0,padx=(0,10))
         self.button_unblock.grid(column=1,row=0,padx=(0,0),sticky="w")
@@ -103,7 +103,7 @@ class MainFrame():
 
     def command_block(self):
         """Adds the url, redirection and date to the treeviewer"""
-        url = url_cleaner_validater(self.website_entry_text.get())
+        url = self.website_entry_text.get()
         website,redirect,*date = self.website_blocker.block_website(url)
         self.tree_viewer.insert("",'end',values=(website,redirect,date))
         self.website_entry_text.set("")
@@ -114,7 +114,6 @@ class MainFrame():
                         
             selectedItem = self.tree_viewer.selection()[0]
             url = self.tree_viewer.item(selectedItem)['values'][0]
-            url = url_cleaner_validater(url)
             current_idx = self.tree_viewer.index(selectedItem)
 
             self.website_blocker.unblock_website(url,current_idx)
@@ -131,19 +130,14 @@ class MainFrame():
         self.entry.bind('<Return>',lambda e: self.command_block())
         self.tree_viewer.bind('<Delete>',lambda e: self.command_unblock())
         self.tree_viewer.bind('<Control-c>',lambda e: self.copy_url())
-        self.root.bind('<Escape>',lambda e: self.quit_apl())
+        self.root.bind('<Escape>',lambda e: quit())
       
-
-    def quit_apl(self):
-        print(f'Program quit {datetime.datetime.now()}')
-        quit()
-
     def reset_treeviewer(self):
         """Removes all itmes from the treeviewer"""
         self.tree_viewer.delete(*self.tree_viewer.get_children())
     
     def open_website(self) -> None:
-        """Opens the selected row in a chrome browser"""
+        """Opens the selected row in a chrome browser, if you are able to surf to the selected website."""
 
         # Sets the webbrowser to Chrome
         webbrowser.register('chrome',None, webbrowser.BackgroundBrowser("C:\Program Files\Google\Chrome\Application\chrome.exe"))
@@ -152,12 +146,12 @@ class MainFrame():
             url = self.tree_viewer.item(selectedItem)['values'][0]
             webbrowser.get('chrome').open_new(url)
         except IndexError:
-            print("Nothing is selected") 
+            pass
         
     def copy_url(self):
-        selectedItem = self.tree_viewer.selection() #returns tuple of the items selected
+        selectedItem = self.tree_viewer.selection()
 
-        url_each_selection = "\n".join([self.tree_viewer.item(i)['values'][0] for i in selectedItem]) #into sring because pyperclip can't copy list
+        url_each_selection = "\n".join([self.tree_viewer.item(i)['values'][0] for i in selectedItem]) #into string because pyperclip can't copy list
         pyperclip.copy(url_each_selection)
         
           
@@ -175,31 +169,40 @@ class ExtraFrame():
         self.root = root
         self.frame = frame
         self.obj_main = obj_main
+        self.list_obj = BlockedList()
+        
 
 
-         # Inside this frame I will add the Entry widget and 2 button widgets 
+         # Window split into 2 FRAMES:  self.FRAME_LEFT and self.FRAME_RIGHT
         self.FRAME_LEFT = tk.Frame(self.frame)
-        self.FRAME_LEFT.pack(pady=10,anchor="nw")
+        self.FRAME_LEFT.pack(pady=10,anchor="nw",fill="y",side="left")
 
-        self.label_dns = ttk.Label(self.FRAME_LEFT,text="Flush your dns:")
-        self.label_reset = ttk.Label(self.FRAME_LEFT,text="Reset list:")
-        self.label_change_redirection = ttk.Label(self.FRAME_LEFT,text="Change redirection:",foreground="grey")
-        self.label_state_redirection = ttk.Label(self.FRAME_LEFT,text="base redirection")
+        self.FRAME_RIGHT = tk.Frame(self.frame)
+        self.FRAME_RIGHT.pack(fill="y",side="right",anchor='ne',pady = 10)
+
+        # Create a frame inside the self.FRAME_LEFT at the top self.FRAME_LEFT_up
+        self.FRAME_LEFT_up = tk.Frame(self.FRAME_LEFT)
+        self.FRAME_LEFT_up.pack(pady=10,anchor="nw")
+
+        self.label_dns = ttk.Label(self.FRAME_LEFT_up,text="Flush your dns:")
+        self.label_reset = ttk.Label(self.FRAME_LEFT_up,text="Reset list:")
+        self.label_change_redirection = ttk.Label(self.FRAME_LEFT_up,text="Change redirection:",foreground="grey")
+        self.label_state_redirection = ttk.Label(self.FRAME_LEFT_up,text="base redirection")
 
 
         self.check_redirection_state = tk.IntVar(value=1)
-        self.button_block = ttk.Button(self.FRAME_LEFT,text='Flush',command=self.flusher)
-        self.button_reset = ttk.Button(self.FRAME_LEFT,text='Reset',command=self.reset)
-        self.checkbutton_state_redirection  = ttk.Checkbutton(self.FRAME_LEFT,variable=self.check_redirection_state,command=self.state_rediraction)
+        self.button_block = ttk.Button(self.FRAME_LEFT_up,text='Flush',command=self.flusher)
+        self.button_reset = ttk.Button(self.FRAME_LEFT_up,text='Reset',command=self.reset)
+        self.checkbutton_state_redirection  = ttk.Checkbutton(self.FRAME_LEFT_up,variable=self.check_redirection_state,command=self.state_rediraction)
         
 
         self.redirection_str = tk.StringVar(value="0.0.0.0")
-        self.entry_redirection = ttk.Entry(self.FRAME_LEFT,textvariable=self.redirection_str,state="disabled")
-        self.button_redirection = ttk.Button(self.FRAME_LEFT,text="OK",state="disabled",command=self.redirection_changer)
-        self.label_current_redirection = ttk.Label(self.FRAME_LEFT,text="Currect redirection: ")
-        self.label_current_redirection_var = ttk.Label(self.FRAME_LEFT,text=self.website_blocker.redirection)
+        self.entry_redirection = ttk.Entry(self.FRAME_LEFT_up,textvariable=self.redirection_str,state="disabled")
+        self.button_redirection = ttk.Button(self.FRAME_LEFT_up,text="OK",state="disabled",command=self.redirection_changer)
+        self.label_current_redirection = ttk.Label(self.FRAME_LEFT_up,text="Currect redirection: ")
+        self.label_current_redirection_var = ttk.Label(self.FRAME_LEFT_up,text=self.website_blocker.redirection)
 
-        self.canvas1 = tk.Canvas(self.FRAME_LEFT,width=400,height=3)
+        self.canvas1 = tk.Canvas(self.FRAME_LEFT_up,width=400,height=3)
 
         self.label_state_redirection.grid(column=0,row=0,padx=10,sticky="w") # label : "base redirection"
         self.checkbutton_state_redirection.grid(column=1,row=0,)
@@ -219,45 +222,122 @@ class ExtraFrame():
         
         self.label_dns.grid(column=0,row=5,padx=10,sticky="w") # label : "Flush your dns:"
         self.button_block.grid(column=1,row=5)
-        
-        
-       
-        
 
-        
-        self.FRAME_BOTTOM = tk.Frame(self.frame)
-        self.FRAME_BOTTOM.pack(fill="x")
+        # Create a frame inside the self.FRAME_LEFT at the top self.FRAME_LEFT_BOTTOM       
+        self.FRAME_BOTTOM = tk.Frame(self.FRAME_LEFT)
+        self.FRAME_BOTTOM.pack(anchor="w",pady=(10,0))
 
         self.check_text = tk.IntVar(value=1)
-        self.checkbutton_state_text  = ttk.Checkbutton(self.FRAME_BOTTOM,variable=self.check_text,command=self.state_text) #### CHECK BUTTON
+        
         
         self.text_list_text = tk.StringVar()
-        self.text_list = tk.Text(self.FRAME_BOTTOM,width=50,height=10,state="disabled",wrap="word")
-             
-        self.checkbutton_state_text.grid(column=0,row=0,padx=10,sticky="w")
-        self.text_list.grid(column=0,row=1,columnspan=3,padx=10)
+        self.text_list = tk.Text(self.FRAME_BOTTOM,width=50,height=10,wrap="word")
+       
+        self.text_list.grid(column=0,row=1,columnspan=3,padx=(10,0))
 
-        self.FRAME_BOTTOM_BUTTONS = tk.Frame(self.frame,width=640)
+        # Create a frame inside the self.FRAME_LEFT at the top self.FRAME_BOTTOM_BUTTONS
+        self.FRAME_BOTTOM_BUTTONS = tk.Frame(self.FRAME_LEFT,width=640)
         self.FRAME_BOTTOM_BUTTONS.pack(side="left")
 
-        self.button_blockall = ttk.Button(self.FRAME_BOTTOM_BUTTONS,text="Block All",state="disabled",command = self.add_blocked_list)
-        self.button_default = ttk.Button(self.FRAME_BOTTOM_BUTTONS,text="Default",state="disabled",command=self.insert_default_list)
-        self.button_set_default = ttk.Button(self.FRAME_BOTTOM_BUTTONS,text="Set Default",state="disabled",command=self.set_new_default)
+        self.button_blockall = ttk.Button(self.FRAME_BOTTOM_BUTTONS,text="Block list",command = self.add_blocked_list)
+        self.button_default = ttk.Button(self.FRAME_BOTTOM_BUTTONS,text="add list",command=self.append_blocked_list)
+        
+        self.button_set_default = ttk.Button(self.FRAME_BOTTOM_BUTTONS,text="quit",command=quit)
         
 
         self.button_set_default.pack(side="left",padx = (10,145))
         self.button_blockall.pack(side="right",anchor="e")
         self.button_default.pack(side="right",padx = 15)
-        
+
 
         
+        #Create top frame for rigth side
+        self.frame_right_up = tk.Frame(self.FRAME_RIGHT)
+        self.frame_right_up.pack(fill="x")
+
+        self.entry_save_var = tk.StringVar()
+        self.entry_save = ttk.Entry(self.frame_right_up,textvariable=self.entry_save_var)
+        self.button_save = ttk.Button(self.frame_right_up,text="New",command=self.save_name)
+
+        self.entry_save.pack(side="left",pady=(10,0),padx=(10,0))
+        self.button_save.pack(side="right",pady=(10,0),padx=(0,10))
+
+        self.frame_right_down = tk.Frame(self.FRAME_RIGHT)
+        self.frame_right_down.pack(pady=(14,0),padx=10)
+
+        self.columns = ["saved_presets"]
+        self.tree_viewer_presets = ttk.Treeview(self.frame_right_down,show='',columns=self.columns,height=15)
+        self.tree_viewer_presets.pack()
+
+        for name in self.list_obj.saved_preset_name_list:
+            self.tree_viewer_presets.insert("",'end',values=(name.replace(" ","\ ")))
+        
+        self.popup = tk.Menu(self.root, tearoff=0)
+
+        #Adding Menu Items
+        self.popup.add_command(label="Delete",command=self.treeviewer_delete)
+
+        self.state_tree = True
+        self.bindings()
+
     def bindings(self):
-        self.text_list.bind("<Control-c>",lambda e: self.paste_urls())
+        self.tree_viewer_presets.bind("<Button-3>", self.menu_popup)
+        self.tree_viewer_presets.bind("<Motion>",self.hovering_tree_viewer)
+        self.tree_viewer_presets.bind("<Button-1>",lambda e:self.when_click_tree())
+        self.tree_viewer_presets.bind("<Leave>",lambda e:self.leaving_tree())
+        self.tree_viewer_presets.bind('<Enter>',lambda e:self.on_entering())
+        self.tree_viewer_presets.bind('<Delete>',lambda e:self.treeviewer_delete())
+        
+        self.entry_save.bind('<Return>',lambda e:  self.save_name())
 
-    def paste_urls(self):
-        pyperclip.paste()
+        self.text_list.bind("<Enter>",lambda e: self.deselect())
     
+    def when_click_tree(self):
+        
+        if self.state_tree:
+            self.state_tree = False
+            self.current_list = None
+            self.insert_preset_list()
+    
+    def deselect(self):
+        try:
+            item_selected = self.tree_viewer_presets.selection()[0]
+            self.tree_viewer_presets.selection_remove(item_selected)
+        except:
+            pass
+            
+        
+    def on_entering(self):
+        self.current_list = self.text_list.get('1.0','end')
+    
+    def leaving_tree(self):
+        self.state_tree = True
+        self.insert_preset_list(self.current_list)
+ 
+
+
+
+    def menu_popup(self,event):
+        """allows for a menu pop up when right clicking a presets inside the treeviewer"""
+        iid = self.tree_viewer_presets.identify_row(event.y)
+
+        if iid:
+            self.tree_viewer_presets.selection_set(iid)
+            self.popup.post(event.x_root, event.y_root)            
+
+            
+    def hovering_tree_viewer(self,event):
+        """Shows the urls within the specific presets when hovering over it"""
+        
+        if self.state_tree:
+            iid = self.tree_viewer_presets.identify_row(event.y)
+            
+            if iid:
+                self.tree_viewer_presets.selection_set(iid)
+                self.insert_preset_list()
+
     def flusher(self):
+        """Flushes the dns"""
         
         os.system('cmd /c "ipconfig /flushdns"')
 
@@ -273,6 +353,13 @@ class ExtraFrame():
                       
         self.button_reset['state'] = tk.NORMAL
     
+    def treeviewer_delete(self):
+        """Deletes a value from the treeviewer"""
+        item_selected = self.tree_viewer_presets.selection()[0]
+        self.list_obj.delete(self.tree_viewer_presets.item(item_selected)['values'][0])
+        self.tree_viewer_presets.delete(item_selected)
+        
+
     def state_rediraction(self):
         """Unlocks the Entry field to choose a new redirection value"""
 
@@ -302,49 +389,54 @@ class ExtraFrame():
             self.website_blocker.redirection = result 
             self.obj_main.label_redirection_show.config(text=result)
             self.label_current_redirection_var.config(text=result)
-    
-    def state_text(self):
-        result = self.check_text.get()
-
-        if result:
-            self.text_list.delete("1.0","end")
-            self.button_blockall["state"] = ["disabled"]
-            self.button_default["state"] = ["disabled"]
-            self.text_list["state"] = ["disabled"]
-            self.button_set_default["state"] = ["disabled"]
-        else:
-            self.button_blockall["state"] = ["normal"]
-            self.button_default["state"] = ["normal"]
-            self.text_list["state"] = ["normal"]
-            self.button_set_default["state"] = ["normal"]
-
-    @staticmethod
-    def get_block_list():
-        list_obj = BlockedList()
-        return list_obj.default_list
-        
-    def insert_default_list(self):
-        #First it deletes the list already in place
+         
+    def insert_preset_list(self,lst=None):
+        """Inserts the preset list of the saved presets"""
         self.text_list.delete("1.0","end")
+        
+        if lst:
+            n_lst = [i+"\n" for i in lst.split('\n')]
+        
+        else:
+            selectedItem = self.tree_viewer_presets.selection()[0]
+            name = self.tree_viewer_presets.item(selectedItem)['values'][0]
+            name.replace("\ "," ")
+            
+            self.list_obj.name_saver(name)
+
+        list_to_insert = n_lst if lst != None else self.list_obj.get_presets_list()  
 
         #Then it adds the new list it receives
-        default = self.get_block_list()
+        default = list_to_insert
         if default:
             for x,i in enumerate(default):
-                self.text_list.insert(f"{x+1}.0",i)
+                if i != "":
+                    self.text_list.insert(f"{x+1}.0",i)
 
 
-    def set_new_default(self):
-        user_response = askokcancel(title="Warning", message="You are about the change the default list")
-                
-        if user_response:
+    def save_name(self):
+        """grabes a name, passes it to the BlockedList obj and puts it into tree viewer"""
+        given_list_websites = self.text_list.get('1.0','end').split("\n")
+        name = self.entry_save_var.get()
+        name_absence = self.list_obj.check_availability_name(name)
+
+        if name_absence != None:
+            if name_absence:
+                ok_or_not = askokcancel(title="Warning", message="You are about to overwrite an existing preset")
+                if ok_or_not:
+                    self.list_obj.name_saver(name)
+                    self.list_obj.delete(name)
+                    self.list_obj.save_new_preset(given_list_websites)
+            else:
+                self.list_obj.name_saver(name)
+                self.list_obj.save_new_preset(given_list_websites)
+                self.tree_viewer_presets.insert("",'end',values=(name.replace(" ", "\ ")))
+                self.entry_save_var.set("")          
+
             
-        
-            list_obj = BlockedList()
-            list_obj.set_new_default(self.text_list.get('1.0','end').split("\n"))
-
 
     def add_blocked_list(self):
+        """Adds the list to the tree viewer by removing everything currently in"""
 
         self.website_blocker.resetter()
         self.obj_main.reset_treeviewer()
@@ -355,10 +447,22 @@ class ExtraFrame():
             website,redirect,*date = row_input
             self.obj_main.tree_viewer.insert("",'end',values=(website,redirect,date))
         
+        self.text_list.delete("1.0","end") 
+
+    def append_blocked_list(self):
+        """Adds the list to the tree viewer"""
+
+        list_for_tree = self.website_blocker.block_list_website(self.text_list.get('1.0','end').split("\n"))
+
+        for row_input in list_for_tree:
+            website,redirect,*date = row_input
+            self.obj_main.tree_viewer.insert("",'end',values=(website,redirect,date))
+        
         self.text_list.delete("1.0","end")
 
 
 
+    
 if __name__ == "__main__":
     print("This is the gui python file")
     
