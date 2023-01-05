@@ -312,11 +312,8 @@ class ExtraFrame():
     
     def leaving_tree(self):
         self.state_tree = True
-        self.insert_preset_list(self.current_list)
- 
-
-
-
+        
+        
     def menu_popup(self,event):
         """allows for a menu pop up when right clicking a presets inside the treeviewer"""
         iid = self.tree_viewer_presets.identify_row(event.y)
@@ -443,6 +440,7 @@ class ExtraFrame():
         
         list_for_tree = self.website_blocker.block_list_website(self.text_list.get('1.0','end').split("\n"))
         
+
         for row_input in list_for_tree:
             website,redirect,*date = row_input
             self.obj_main.tree_viewer.insert("",'end',values=(website,redirect,date))

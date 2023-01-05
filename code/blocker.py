@@ -74,11 +74,13 @@ class Blocker:
         return_list = []
         
         for website in list_websites:
+            
             cleaned_website = url_cleaner_validater(website)
-
-            if f"www.{cleaned_website}" in [i[0] for i in self.blocked_websites] or len(cleaned_website) or cleaned_website == "\n":
+            
+            
+            if f"www.{cleaned_website}" in [i[0] for i in self.blocked_websites] or not len(cleaned_website) or cleaned_website == "\n":
                 continue            
-
+            
             with open(self.path_website, "a") as file:
                 file.write(f"www.{cleaned_website} {self.redirection} {date}\n")
 
@@ -202,7 +204,6 @@ class BlockedList():
                 if line := line.strip():
                     preset_dict = json.loads(line)
                     presets.append(preset_dict["name"])
-        print(presets)
         return presets
     
     def check_availability_name(self,name):
