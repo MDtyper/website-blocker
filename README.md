@@ -4,7 +4,6 @@ A python script to block certain websites using the hosts file.
 
 ## First things first
 To run the program, simply clone the repository and run the main.py file.
-If you running the code on something different than Windows, the hosts path should be changed accordingly inside that blocker.py file. 
 
 ## How to use?
 Using the Tkinter library a simple GUI is shown and allows for the simple adding and removal of website links. 
